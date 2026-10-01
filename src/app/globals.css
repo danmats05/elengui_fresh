@@ -1,0 +1,324 @@
+@import "tailwindcss";
+@import "lenis/dist/lenis.css";
+
+/* ─── Design tokens (CLAUDE.md / guide de marque) ─── */
+:root {
+  --pamplemousse: #ff6f7d;
+  --pamplemousse-accent: #ffd6da;
+  --mangue: #ff9a1f;
+  --mangue-accent: #ffe1b8;
+  --passion: #ffd23f;
+  --passion-accent: #fff4c7;
+  --bissap: #6b0f3a; /* couleur principale du site */
+  --bissap-accent: #c2185b;
+  --fond: #fff8f0; /* blanc cassé chaud */
+  --texte: #2a1414; /* brun très foncé, à la place du noir */
+
+  --bissap-profond: #4f0a2a; /* ombre du pourpre, pour la profondeur */
+  --header-h: 5.5rem;
+  --gutter: clamp(1.25rem, 4vw, 4rem);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@theme inline {
+  --color-pamplemousse: var(--pamplemousse);
+  --color-pamplemousse-accent: var(--pamplemousse-accent);
+  --color-mangue: var(--mangue);
+  --color-mangue-accent: var(--mangue-accent);
+  --color-passion: var(--passion);
+  --color-passion-accent: var(--passion-accent);
+  --color-bissap: var(--bissap);
+  --color-bissap-accent: var(--bissap-accent);
+  --color-bissap-profond: var(--bissap-profond);
+  --color-fond: var(--fond);
+  --color-texte: var(--texte);
+
+  --font-sans: var(--font-power), var(--font-bricolage), system-ui, sans-serif;
+  --font-accent: var(--font-benz), var(--font-bricolage), system-ui, sans-serif;
+  --font-titre: var(--font-bricolage), system-ui, sans-serif;
+}
+
+/* ─── Base ─── */
+@layer base {
+  html {
+    background: var(--bissap);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--fond);
+    color: var(--texte);
+    font-family: var(--font-sans);
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  .titre {
+    font-family: var(--font-titre);
+    font-weight: 800;
+    font-stretch: 86%;
+    font-variation-settings: "opsz" 96;
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+  }
+
+  ::selection {
+    background: var(--passion);
+    color: var(--texte);
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--passion);
+    outline-offset: 3px;
+  }
+}
+
+/* ─── Composants partagés ─── */
+@layer components {
+  /* Boutons et pilules : Bricolage Bold (Power Grotesk n'existe qu'en Regular). */
+  .pilule {
+    font-family: var(--font-titre);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    /* Arrondi fini (≥ demi-hauteur des boutons) : une valeur énorme rendrait la transition vers 12px saccadée */
+    border-radius: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    transition:
+      background-color 0.3s var(--ease-out),
+      color 0.3s var(--ease-out);
+  }
+
+  /* Pas de transition sur transform ailleurs : elle entrerait en conflit avec GSAP. */
+  .bouton {
+    padding: 1.05rem 1.6rem 1.1rem;
+    font-size: 1.0625rem;
+    transition:
+      background-color 0.3s var(--ease-out),
+      color 0.3s var(--ease-out),
+      transform 0.3s var(--ease-out);
+  }
+  .bouton:hover {
+    transform: translateY(-2px);
+  }
+  .bouton:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  /*
+   * Animation des boutons (comme « Découvrir la gamme », sans flèche) : un cercle part du centre et remplit le
+   * bouton, les coins se resserrent. Couleur du remplissage : --flow-remplissage ; texte au survol : classes hover:text-*.
+   * Seules des transformations sont animées (fluide), et le cercle passe sous le texte (isolation).
+   */
+  .flow {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    transition:
+      border-radius 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+      scale 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+      color 0.3s ease;
+  }
+  .flow::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: -1;
+    width: calc(150% + 2rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--flow-remplissage, var(--passion));
+    translate: -50% -50%;
+    scale: 0.05;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      scale 0.55s cubic-bezier(0.19, 1, 0.22, 1),
+      opacity 0.55s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+  .flow:hover,
+  .flow:focus-visible {
+    border-radius: 12px;
+    transform: none;
+  }
+  .flow:hover::before,
+  .flow:focus-visible::before {
+    scale: 1;
+    opacity: 1;
+  }
+  .flow:active {
+    scale: 0.95;
+  }
+
+  /* Verre dépoli neutre : floute et assombrit légèrement ce qui passe derrière, sans teinte propre */
+  .verre {
+    background-color: rgb(42 20 20 / 0.12);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4) brightness(0.78);
+    backdrop-filter: blur(16px) saturate(1.4) brightness(0.78);
+    text-shadow: 0 1px 2px rgb(42 20 20 / 0.25);
+  }
+
+  /* Variante plus marquée : reste lisible au-dessus de textes chargés (bande défilante des fiches) */
+  .verre-fort {
+    background-color: rgb(42 20 20 / 0.28);
+    -webkit-backdrop-filter: blur(22px) saturate(1.4) brightness(0.7);
+    backdrop-filter: blur(22px) saturate(1.4) brightness(0.7);
+  }
+
+  /* Libellé en capitales, police d'accent (Benz Grotesk Heavy) : bandeau, mentions, petits titres de rubrique. */
+  .etiquette {
+    font-family: var(--font-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    line-height: 1.375;
+  }
+
+  /* Grain léger sur les grands aplats */
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    opacity: 0.07;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+/* Éléments révélés par GSAP : cachés avant hydratation pour éviter le flash.
+   La classe .js est posée par un script inline dans le <head>. */
+.js [data-reveal] {
+  visibility: hidden;
+}
+
+/* L'age gate n'apparaît pas si l'âge a déjà été validé (attribut posé avant le rendu). */
+html[data-age-ok] [data-age-gate] {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js [data-reveal] {
+    visibility: visible;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes nutrition-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+}
+
+/* Tiroir du panier : glisse depuis la droite */
+dialog.tiroir[open] {
+  animation: tiroir-in 0.5s var(--ease-out);
+}
+dialog.tiroir[open]::backdrop {
+  animation: fondu-in 0.4s ease-out;
+}
+dialog.tiroir[open][data-fermeture] {
+  animation: tiroir-out 0.42s cubic-bezier(0.55, 0, 0.75, 0.2) forwards;
+}
+dialog.tiroir[open][data-fermeture]::backdrop {
+  animation: fondu-out 0.42s ease-in forwards;
+}
+@keyframes tiroir-out {
+  to {
+    transform: translateX(calc(100% + 2rem));
+  }
+}
+@keyframes fondu-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes tiroir-in {
+  from {
+    transform: translateX(calc(100% + 2rem));
+  }
+}
+@keyframes fondu-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Footer : position et rayon du badge (mêmes valeurs que ses classes), pour découper le fond autour de lui. */
+.footer-carte {
+  --b-r: 35vw;
+  --b-x: 50%;
+  --b-y: 21vw;
+  --b-marge: 12px;
+}
+@media (min-width: 768px) {
+  .footer-carte {
+    --b-r: calc(min(45vw, 42rem) / 2);
+    --b-x: calc(var(--b-r) - min(5vw, 4.5rem));
+    --b-y: calc(var(--b-r) - min(4vw, 3rem));
+    --b-marge: 16px;
+  }
+}
+.footer-fond {
+  --decoupe: radial-gradient(
+    circle at var(--b-x) var(--b-y),
+    transparent calc(var(--b-r) + var(--b-marge)),
+    #000 calc(var(--b-r) + var(--b-marge) + 1px)
+  );
+  -webkit-mask: var(--decoupe);
+  mask: var(--decoupe);
+}
+
+/* Balancement du badge « NEW » */
+.badge-balance {
+  animation: badge-balance 4.4s ease-in-out infinite;
+}
+@keyframes badge-balance {
+  0%,
+  100% {
+    rotate: -8deg;
+  }
+  50% {
+    rotate: 8deg;
+  }
+}
+
+/* Rotation continue des soleils décoratifs (indépendante du JS) */
+.soleil-tourne {
+  animation: soleil-tourne 30s linear infinite;
+}
+@keyframes soleil-tourne {
+  to {
+    rotate: 360deg;
+  }
+}
+
+/* Croix de fermeture du panier : tour complet au clic */
+.croix[data-tourne] svg {
+  /* La transition du survol porte aussi sur rotate et passerait devant l'animation : on la coupe. */
+  transition: none;
+  animation: croix-tourne 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes croix-tourne {
+  from {
+    rotate: 90deg;
+  }
+  to {
+    rotate: 450deg;
+  }
+}
