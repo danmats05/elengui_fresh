@@ -85,6 +85,7 @@ export default function StoryScroll({
               end: "bottom top",
               pin: true,
               pinSpacing: false,
+              anticipatePin: 1,
             }),
           );
         }

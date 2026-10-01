@@ -15,7 +15,7 @@ export default function SmoothScroll() {
     let minuteur = 0;
     const ro = new ResizeObserver(() => {
       const h = document.documentElement.scrollHeight;
-      if (Math.abs(h - hauteur) < 2) return;
+      if (Math.abs(h - hauteur) < 120) return;
       hauteur = h;
       window.clearTimeout(minuteur);
       minuteur = window.setTimeout(() => ScrollTrigger.refresh(), 150);
@@ -28,11 +28,18 @@ export default function SmoothScroll() {
   }, []);
 
   useEffect(() => {
-    const mq = window.matchMedia(REDUCED_MOTION);
-    const sync = () => setEnabled(!mq.matches);
+    // Lenis seulement à la souris / au trackpad : sur écran tactile, le défilement natif du téléphone
+    // est déjà fluide, et le doubler par Lenis provoque des à-coups dans les animations au scroll.
+    const reduit = window.matchMedia(REDUCED_MOTION);
+    const tactile = window.matchMedia("(hover: none) and (pointer: coarse)");
+    const sync = () => setEnabled(!reduit.matches && !tactile.matches);
     sync();
-    mq.addEventListener("change", sync);
-    return () => mq.removeEventListener("change", sync);
+    reduit.addEventListener("change", sync);
+    tactile.addEventListener("change", sync);
+    return () => {
+      reduit.removeEventListener("change", sync);
+      tactile.removeEventListener("change", sync);
+    };
   }, []);
 
   if (!enabled) return null;

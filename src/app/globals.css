@@ -149,7 +149,8 @@
     transform: none;
   }
   .flow:hover::before,
-  .flow:focus-visible::before {
+  .flow:focus-visible::before,
+  .flow:active::before {
     scale: 1;
     opacity: 1;
   }

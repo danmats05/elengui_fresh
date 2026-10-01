@@ -153,7 +153,7 @@ export default function AgeGate() {
                 <button
                   type="button"
                   onClick={() => setRefused(true)}
-                  className="pilule bouton flow min-w-32 justify-center text-xl text-fond ring-2 ring-inset ring-fond/40 [--flow-remplissage:var(--fond)] hover:text-bissap focus-visible:text-bissap md:min-w-40"
+                  className="pilule bouton flow min-w-32 justify-center text-xl text-fond ring-2 ring-inset ring-fond/40 [--flow-remplissage:var(--fond)] hover:text-texte focus-visible:text-texte active:text-texte md:min-w-40"
                 >
                   Non
                 </button>
