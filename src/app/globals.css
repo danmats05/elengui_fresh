@@ -219,6 +219,25 @@ html[data-age-ok] [data-age-gate] {
   }
 }
 
+/* Tableau nutritionnel : apparition et fermeture */
+dialog.nutrition[open] {
+  animation: nutrition-in 0.4s var(--ease-out);
+}
+dialog.nutrition[open]::backdrop {
+  animation: fondu-in 0.4s ease-out;
+}
+dialog.nutrition[open][data-fermeture] {
+  animation: nutrition-out 0.35s cubic-bezier(0.55, 0, 0.75, 0.2) forwards;
+}
+dialog.nutrition[open][data-fermeture]::backdrop {
+  animation: fondu-out 0.35s ease-in forwards;
+}
+@keyframes nutrition-out {
+  to {
+    opacity: 0;
+    transform: translateY(32px) scale(0.96);
+  }
+}
 @keyframes nutrition-in {
   from {
     opacity: 0;

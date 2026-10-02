@@ -13,10 +13,18 @@ type CanProps = {
   drink: Drink;
   className?: string;
   priority?: boolean;
+  /** Charger l'image tout de suite (sans attendre qu'elle approche de l'écran). */
+  eager?: boolean;
   sizes?: string;
 };
 
-export default function Can({ drink, className = "", priority, sizes = "(min-width: 768px) 30vw, 60vw" }: CanProps) {
+export default function Can({
+  drink,
+  className = "",
+  priority,
+  eager,
+  sizes = "(min-width: 768px) 30vw, 60vw",
+}: CanProps) {
   const image = CAN_IMAGES[drink.slug];
   if (image) {
     return (
@@ -27,6 +35,7 @@ export default function Can({ drink, className = "", priority, sizes = "(min-wid
         height={image.height}
         sizes={sizes}
         priority={priority}
+        loading={priority ? undefined : eager ? "eager" : "lazy"}
         className={`select-none object-contain ${className}`}
         draggable={false}
       />

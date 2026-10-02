@@ -117,7 +117,7 @@ export default function TiroirPanier() {
     >
       <div className="flex h-full flex-col px-6 pb-6 pt-7 md:px-10 md:pt-9">
         <div className="flex items-center justify-between border-b-2 border-[var(--p-accent)] pb-4">
-          <h2 id="panier-titre" className="text-4xl">
+          <h2 id="panier-titre" tabIndex={-1} autoFocus className="text-4xl outline-none">
             {etape === "coordonnees" ? "Vos coordonnées" : etape === "validee" ? "Merci\u00a0!" : "Votre panier"}
           </h2>
           <button

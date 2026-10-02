@@ -80,7 +80,7 @@ export default function EclatsFruits({ slug, compacte = false }: { slug: DrinkSl
             data-x={e.x}
             data-y={e.y}
             data-rot={e.rot}
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 scale-0 opacity-0 will-change-transform"
+            className="invisible absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 scale-0 opacity-0"
             style={{ width: `${e.taille}%`, zIndex: e.flou ? 0 : 1 }}
           >
             <Image
@@ -113,7 +113,7 @@ export function montrerFruits(carte: HTMLElement, ouvert: boolean) {
       y: (_, el: HTMLElement) => (Number(el.dataset.y) / 100) * height,
       rotate: (_, el: HTMLElement) => Number(el.dataset.rot),
       scale: 1,
-      opacity: 1,
+      autoAlpha: 1,
       duration: 0.75,
       ease: "back.out(1.6)",
       stagger: { each: 0.045, from: "start" },
@@ -125,7 +125,7 @@ export function montrerFruits(carte: HTMLElement, ouvert: boolean) {
       y: 0,
       rotate: 0,
       scale: 0,
-      opacity: 0,
+      autoAlpha: 0,
       duration: 0.45,
       ease: "power3.in",
       stagger: { each: 0.03, from: "end" },

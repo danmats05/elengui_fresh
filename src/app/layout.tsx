@@ -44,10 +44,10 @@ export const metadata: Metadata = {
     "Elengi Fresh, des vins de fruits et de fleurs fermentés naturellement, sans alcool distillé. 6 % vol., en canettes de 330 ml.",
   icons: {
     icon: [
-      { url: "/favicon/favicon.svg", type: "image/svg+xml" },
-      { url: "/favicon/favicon.ico", sizes: "48x48" },
+      { url: "/favicon/favicon.svg?v=2", type: "image/svg+xml" },
+      { url: "/favicon/favicon.ico?v=2", sizes: "48x48" },
     ],
-    apple: "/favicon/apple-touch-icon.png",
+    apple: "/favicon/apple-touch-icon.png?v=2",
   },
   manifest: "/favicon/site.webmanifest",
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { gsap, useGSAP, FULL_MOTION } from "@/lib/gsap";
 import { drinks, ingredients, nouveautes } from "@/data/drinks";
@@ -30,18 +30,52 @@ export default function Gamme() {
           stagger: 0.08,
           scrollTrigger: { trigger: root.current, start: "top 75%" },
         });
-        gsap.from("[data-gamme-carte]", {
-          x: 120,
-          autoAlpha: 0,
-          duration: 1.3,
-          ease: "expo.out",
-          stagger: 0.09,
-          scrollTrigger: { trigger: piste.current, start: "top 85%" },
-        });
+        // Mobile : les cartes montent (un glissement horizontal dans une bande à défilement aimanté
+        // peut provoquer un recalage visible) ; desktop : elles arrivent de la droite.
+        const mobile = window.matchMedia("(max-width: 767px)").matches;
+        if (mobile) {
+          // Mobile : entrée légère (opacité + petite montée sur le GPU), sans toucher à la visibilité.
+          gsap.from("[data-gamme-carte]", {
+            y: 32,
+            opacity: 0,
+            force3D: true,
+            duration: 0.8,
+            ease: "power3.out",
+            stagger: 0.06,
+            clearProps: "transform,opacity",
+            scrollTrigger: { trigger: piste.current, start: "top 90%" },
+          });
+        } else {
+          gsap.from("[data-gamme-carte]", {
+            x: 120,
+            autoAlpha: 0,
+            duration: 1.3,
+            ease: "expo.out",
+            stagger: 0.09,
+            scrollTrigger: { trigger: piste.current, start: "top 85%" },
+          });
+        }
       });
     },
     { scope: root },
   );
+
+  // Décode les images des canettes à l'avance (temps libre du navigateur), pour que leur premier
+  // affichage pendant l'animation d'entrée ne bloque pas une image.
+  useEffect(() => {
+    const decoder = () =>
+      root.current?.querySelectorAll<HTMLImageElement>("[data-gamme-carte] img").forEach((img) => {
+        img.decode().catch(() => undefined);
+      });
+    // requestIdleCallback n'existe pas sur Safari : repli sur un délai.
+    const w = window as Window & typeof globalThis;
+    if (typeof w.requestIdleCallback === "function") {
+      const id = w.requestIdleCallback(decoder, { timeout: 2500 });
+      return () => w.cancelIdleCallback(id);
+    }
+    const t = setTimeout(decoder, 1200);
+    return () => clearTimeout(t);
+  }, []);
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     const el = piste.current;
@@ -153,7 +187,7 @@ export default function Gamme() {
               >
                 <EclatsFruits slug={d.slug} />
                 <div className="relative z-10 h-[78%] transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:-translate-y-2 group-hover:-rotate-3">
-                  <Can drink={d} sizes="(min-width: 768px) 9rem, 30vw" className="h-full w-auto" />
+                  <Can drink={d} eager sizes="(min-width: 768px) 9rem, 30vw" className="h-full w-auto" />
                   {nouveautes.includes(d.slug) && (
                     <div className="absolute left-0 top-[4%] w-[62%] -translate-x-1/2 -translate-y-1/2">
                       <BadgeNew sizes="6rem" />

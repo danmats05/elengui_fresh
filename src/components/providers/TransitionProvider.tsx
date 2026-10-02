@@ -84,6 +84,11 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
     }, 60);
   };
 
+  // La position de défilement est gérée ici, pas par le navigateur (qui la restaure parfois après coup).
+  useEffect(() => {
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+  }, []);
+
   // Interception des liens internes vers une autre page.
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
@@ -125,7 +130,20 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
     } else if (lenis) {
       lenis.scrollTo(0, { immediate: true, force: true });
     } else {
-      window.scrollTo(0, 0);
+      // Sans Lenis (mobile) : l'élan du défilement précédent peut encore tourner et annuler un scrollTo
+      // unique (iOS). On l'interrompt, puis on recolle en haut sur plusieurs images.
+      const enHaut = () => {
+        document.documentElement.style.overflow = "hidden";
+        window.scrollTo(0, 0);
+        document.documentElement.style.overflow = "";
+      };
+      enHaut();
+      requestAnimationFrame(() => {
+        enHaut();
+        requestAnimationFrame(enHaut);
+      });
+      window.setTimeout(enHaut, 120);
+      window.setTimeout(enHaut, 320);
     }
     ancre.current = null;
 

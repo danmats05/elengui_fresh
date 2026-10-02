@@ -18,38 +18,75 @@ export default function PanneauNutrition({ drink, ouvert, onFermer }: Props) {
     const d = ref.current;
     if (!d) return;
     if (ouvert && !d.open) {
+      delete d.dataset.fermeture;
       d.showModal();
       lenis?.stop();
-    } else if (!ouvert && d.open) {
-      d.close();
+      return;
     }
-    if (!ouvert) lenis?.start();
+    if (ouvert || !d.open) {
+      if (!ouvert) lenis?.start();
+      return;
+    }
+    // Fermeture animée : la fenêtre redescend en s'effaçant, puis quitte la couche supérieure.
+    const terminer = () => {
+      d.close();
+      delete d.dataset.fermeture;
+      lenis?.start();
+    };
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return terminer();
+    d.dataset.fermeture = "";
+    const filet = window.setTimeout(terminer, 450);
+    const fin = (e: AnimationEvent) => {
+      if (e.target !== d) return;
+      window.clearTimeout(filet);
+      terminer();
+    };
+    d.addEventListener("animationend", fin, { once: true });
+    return () => {
+      window.clearTimeout(filet);
+      d.removeEventListener("animationend", fin);
+    };
   }, [ouvert, lenis]);
 
   return (
     <dialog
       ref={ref}
+      onCancel={(e) => {
+        // Échap : on passe par l'animation de fermeture.
+        e.preventDefault();
+        onFermer();
+      }}
       onClose={onFermer}
       onClick={(e) => e.target === e.currentTarget && onFermer()}
       aria-labelledby="nutrition-titre"
       data-lenis-prevent
-      className="m-auto max-h-[90svh] w-[min(56rem,calc(100vw-2rem))] overflow-y-auto rounded-[1.75rem] p-0 backdrop:bg-texte/70 backdrop:backdrop-blur-sm open:animate-[nutrition-in_0.4s_var(--ease-out)]"
+      className="nutrition m-auto max-h-[90svh] w-[min(56rem,calc(100vw-2rem))] overflow-y-auto rounded-[1.75rem] p-0 backdrop:bg-texte/70 backdrop:backdrop-blur-sm"
       style={{ backgroundColor: drink.color, color: drink.text }}
     >
       <div className="relative px-6 pb-10 pt-14 md:px-16 md:pb-14 md:pt-16">
         <button
           type="button"
-          onClick={onFermer}
+          onClick={(e) => {
+            // Même animation que la croix du panier : tour complet pendant la fermeture.
+            const bouton = e.currentTarget;
+            bouton.dataset.tourne = "";
+            window.setTimeout(() => delete bouton.dataset.tourne, 600);
+            onFermer();
+          }}
           aria-label="Fermer le tableau nutritionnel"
-          className="absolute right-4 top-4 grid h-11 w-11 place-items-center rounded-full hover:bg-texte/10 md:right-6 md:top-6"
+          className="croix group absolute right-4 top-4 grid h-11 w-11 place-items-center rounded-full hover:bg-texte/10 md:right-6 md:top-6"
         >
-          <svg viewBox="0 0 24 24" aria-hidden="true" className="h-7 w-7">
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            className="h-7 w-7 transition-[rotate] duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:rotate-90 group-focus-visible:rotate-90"
+          >
             <path d="M5 5l14 14M19 5 5 19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
           </svg>
         </button>
 
         <div className="mx-auto max-w-[36rem] text-center">
-          <h2 id="nutrition-titre" className="font-titre text-3xl md:text-4xl">
+          <h2 id="nutrition-titre" tabIndex={-1} autoFocus className="font-titre text-3xl outline-none md:text-4xl">
             {drink.name}
           </h2>
           <p className="mt-2 text-lg leading-snug opacity-90 md:text-xl">{infos.denomination}</p>
